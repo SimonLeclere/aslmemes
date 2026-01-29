@@ -51,6 +51,7 @@ fetch('_data/memes.json')
                 `;
 
                 modal.style.display = "flex";
+                document.body.classList.add('modal-open');
                 setTimeout(() => {
                     modal.classList.add('active');
                 }, 10);
@@ -68,6 +69,7 @@ fetch('_data/memes.json')
 document.querySelector('.close').onclick = function() { 
     const modal = document.getElementById('modal');
     modal.classList.remove('active');
+    document.body.classList.remove('modal-open');
     setTimeout(() => {
         modal.style.display = "none";
     }, 300);
@@ -77,6 +79,7 @@ window.onclick = function(event) {
     const modal = document.getElementById('modal');
     if (event.target == modal) {
         modal.classList.remove('active');
+        document.body.classList.remove('modal-open');
         setTimeout(() => {
             modal.style.display = "none";
         }, 300);
