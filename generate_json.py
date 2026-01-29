@@ -1,53 +1,112 @@
 import os
 import json
 import subprocess
+import requests
 from datetime import datetime
 
 MEMES_DIR = 'memes'
 OUTPUT_FILE = '_data/memes.json'
-
-# Liste des extensions acceptées
 EXTENSIONS = ('.png', '.jpg', '.jpeg', '.gif', '.webp')
+GH_TOKEN = os.getenv("GH_TOKEN")
+REPO_OWNER = "simonleclere"
+REPO_NAME = "aslmemes"
+CATEGORY_ID = "DIC_kwDORD658c4C1ljw"
 
-data = []
+def get_github_reactions():
+    if not GH_TOKEN:
+        print("GH_TOKEN non trouvé, skip fetching reactions.")
+        return {}
 
-# S'assurer que le dossier _data existe
-os.makedirs('_data', exist_ok=True)
+    query = """
+    query($owner: String!, $name: String!, $categoryId: ID!) {
+      repository(owner: $owner, name: $name) {
+        discussions(first: 100, categoryId: $categoryId) {
+          nodes {
+            title
+            createdAt
+            reactionGroups {
+              content
+              reactors {
+                totalCount
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+    
+    variables = {
+        "owner": REPO_OWNER,
+        "name": REPO_NAME,
+        "categoryId": CATEGORY_ID
+    }
 
-# Parcourir le dossier memes
-for filename in os.listdir(MEMES_DIR):
-    if filename.lower().endswith(EXTENSIONS):
-        filepath = os.path.join(MEMES_DIR, filename)
+    try:
+        response = requests.post(
+            "https://api.github.com/graphql",
+            headers={"Authorization": f"Bearer {GH_TOKEN}"},
+            json={"query": query, "variables": variables},
+            timeout=10
+        )
+        response.raise_for_status()
+        data = response.json()
         
-        # Récupérer l'auteur et la date du dernier commit qui a touché ce fichier
-        # On utilise git log pour ça
-        try:
-            # Récupère l'auteur (nom GitHub)
-            author = subprocess.check_output(
-                ['git', 'log', '-1', '--format=%an', '--', filepath]
-            ).decode('utf-8').strip()
-            
-            # Récupère la date (ISO 8601)
-            date_str = subprocess.check_output(
-                ['git', 'log', '-1', '--format=%ai', '--', filepath]
-            ).decode('utf-8').strip()
-            
-            # Si le fichier est nouveau (pas encore commit), mettre des valeurs par défaut
-            if not author:
-                author = "Inconnu (Nouveau)"
-                date_str = datetime.now().isoformat()
+        discussions = data.get("data", {}).get("repository", {}).get("discussions", {}).get("nodes", [])
+        reactions_map = {}
+        
+        for disc in discussions:
+            filename = disc["title"]
+            total_votes = sum(group["reactors"]["totalCount"] for group in disc["reactionGroups"])
+            reactions_map[filename] = {
+                "votes": total_votes,
+                "github_createdAt": disc["createdAt"]
+            }
+        return reactions_map
+    except Exception as e:
+        print(f"Erreur lors de la récupération des réactions GitHub: {e}")
+        return {}
 
-            data.append({
-                'filename': filename,
-                'author': author,
-                'date': date_str
-            })
+def main():
+    os.makedirs('_data', exist_ok=True)
+    
+    github_stats = get_github_reactions()
+    memes_data = []
+
+    for filename in os.listdir(MEMES_DIR):
+        if filename.lower().endswith(EXTENSIONS):
+            filepath = os.path.join(MEMES_DIR, filename)
             
-        except Exception as e:
-            print(f"Erreur sur {filename}: {e}")
+            try:
+                author = subprocess.check_output(
+                    ['git', 'log', '-1', '--format=%an', '--', filepath]
+                ).decode('utf-8').strip()
+                
+                date_str = subprocess.check_output(
+                    ['git', '-C', os.getcwd(), 'log', '-1', '--format=%ai', '--', filepath]
+                ).decode('utf-8').strip()
+                
+                if not author:
+                    author = "Inconnu (Nouveau)"
+                    date_str = datetime.now().isoformat()
 
-# Sauvegarde du JSON
-with open(OUTPUT_FILE, 'w') as f:
-    json.dump(data, f, indent=4)
+                stats = github_stats.get(filename, {"votes": 0, "github_createdAt": date_str})
+                
+                memes_data.append({
+                    'filename': filename,
+                    'author': author,
+                    'date': date_str,
+                    'votes': stats["votes"],
+                    'github_date': stats["github_createdAt"]
+                })
+                
+            except Exception as e:
+                print(f"Erreur sur {filename}: {e}")
 
-print(f"Index généré avec {len(data)} memes.")
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+        json.dump(memes_data, f, indent=4, ensure_ascii=False)
+
+    print(f"Index généré avec {len(memes_data)} memes.")
+
+if __name__ == "__main__":
+    main()

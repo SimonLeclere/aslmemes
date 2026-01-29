@@ -7,10 +7,55 @@ body {
 }
 
 h1 {
-    margin: 40px 0 20px;
-    font-weight: 300;
-    letter-spacing: -1px;
+    margin: 60px auto 20px;
+    font-weight: 700;
+    letter-spacing: -2px;
+    text-align: center;
+    font-size: 2.5em;
+    max-width: 1200px;
 }
+
+.controls {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+#sortSelect {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #efefef;
+    background: #fff;
+    font-size: 0.9em;
+    color: #262626;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#sortSelect:hover {
+    border-color: #8e8e8e;
+}
+
+#caption {
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #efefef;
+    color: #262626;
+}
+
+.caption-author {
+    font-weight: 600;
+    display: block;
+    font-size: 1.1em;
+    margin-bottom: 4px;
+}
+
+.caption-date {
+    color: #8e8e8e;
+    font-size: 0.85em;
+    display: block;
+}
+
 
 .gallery {
     column-count: 3;
@@ -169,6 +214,11 @@ h1 {
     .modal-right {
         border-left: none;
         border-top: 1px solid #efefef;
+    }
+    .modal-left {
+        max-height: 50vh;
+        flex: none;
+        width: 100%;
     }
 }
 

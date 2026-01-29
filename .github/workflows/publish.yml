@@ -5,17 +5,20 @@ on:
     branches:
       - main
     paths:
-      - 'memes/**'     # Se lance uniquement si on ajoute une image
+      - 'memes/**'
       - '*.html'
       - '*.js'
       - '*.css'
       - 'generate_json.py'
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
 
-# Permissions nécessaires pour que le bot puisse écrire sur GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
+  discussions: read
 
 concurrency:
   group: "pages"
@@ -31,15 +34,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # IMPORTANT: Nécessaire pour avoir l'historique git (git log)
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
+      - name: Install dependencies
+        run: pip install requests
+
       - name: Generate JSON Data
         run: python generate_json.py
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
