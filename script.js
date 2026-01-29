@@ -1,3 +1,27 @@
+// Fonction pour charger dynamiquement Giscus pour chaque meme
+function loadGiscus(filename) {
+
+    const script = document.createElement('script');
+    script.src = "https://giscus.app/client.js";
+    script.setAttribute("data-repo", "simonleclere/aslmemes");
+    script.setAttribute("data-repo-id", "R_kgDORD658Q");
+    script.setAttribute("data-category", "General");
+    script.setAttribute("data-category-id", "DIC_kwDORD658c4C1ljw");
+    script.setAttribute("data-mapping", "specific");
+    script.setAttribute("data-term", filename);
+    script.setAttribute("data-reactions-enabled", "1");
+    script.setAttribute("data-emit-metadata", "0");
+    script.setAttribute("data-input-position", "top");
+    script.setAttribute("data-theme", "preferred_color_scheme");
+    script.setAttribute("data-lang", "fr");
+    script.setAttribute("crossorigin", "anonymous");
+    script.async = true;
+
+    // On vide l'ancienne instance de Giscus et on met la nouvelle
+    const giscusContainer = document.querySelector('.giscus');
+    giscusContainer.innerHTML = "";
+    giscusContainer.appendChild(script);
+}
 fetch('_data/memes.json')
     .then(response => response.json())
     .then(memes => {
@@ -26,6 +50,9 @@ fetch('_data/memes.json')
                     <strong>Auteur :</strong> ${meme.author}<br>
                     <strong>Date :</strong> ${new Date(meme.date).toLocaleDateString()}
                 `;
+
+                // Charger le système de vote pour CE meme
+                loadGiscus(meme.filename);
             }
 
             container.appendChild(img);
