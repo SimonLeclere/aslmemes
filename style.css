@@ -6,6 +6,54 @@ body {
     color: #262626;
 }
 
+.contribute-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: #262626;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 25px;
+    font-size: 0.9em;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    z-index: 100;
+}
+
+.contribute-btn:hover {
+    background: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.contribute-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+@media (max-width: 600px) {
+    .contribute-btn {
+        top: 15px;
+        right: 15px;
+        padding: 8px 14px;
+        font-size: 0.85em;
+    }
+
+    .contribute-btn span {
+        display: none;
+    }
+
+    .contribute-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
 h1 {
     margin: 60px auto 20px;
     font-weight: 700;
