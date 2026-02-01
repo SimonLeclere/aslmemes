@@ -11,7 +11,7 @@ on:
       - '*.css'
       - 'generate_json.py'
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 9 * * 1'
   workflow_dispatch:
 
 permissions:
